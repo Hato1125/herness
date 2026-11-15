@@ -140,7 +140,7 @@ fn runTool(
         return error.DeniedByUser;
     }
 
-    return tool.run(context, call);
+    return tool.run(context, call, terminal);
 }
 
 const Terminal = struct {
@@ -152,6 +152,16 @@ const Terminal = struct {
             .thinking => terminal.print("\x1b[2mthinking...\x1b[0m\n\n", .{}),
             .text => |text| terminal.print("{s}", .{text}),
         }
+    }
+
+    pub fn ask(
+        terminal: Terminal,
+        arena: std.mem.Allocator,
+        question: []const u8,
+    ) ![]const u8 {
+        _ = question;
+        const answer = terminal.readLine("answer: ") orelse return error.NoAnswer;
+        return arena.dupe(u8, answer);
     }
 
     fn report(terminal: Terminal, err: anyerror) void {
