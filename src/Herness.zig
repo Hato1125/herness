@@ -11,8 +11,7 @@ const Herness = @This();
 const max_tool_rounds = 32;
 
 const system_prompt =
-    \\You can use the tools read, create and write to work with files
-    \\relative to the current working directory.
+    \\Paths in tool arguments are relative to the current working directory.
 ;
 
 process: std.process.Init,
