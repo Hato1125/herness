@@ -6,6 +6,7 @@ const Write = @import("tools/Write.zig");
 const Ask = @import("tools/Ask.zig");
 const List = @import("tools/List.zig");
 const Diff = @import("tools/Diff.zig");
+const Find = @import("tools/Find.zig");
 
 pub const Definition = struct {
     name: []const u8,
@@ -62,6 +63,15 @@ pub const definitions = [_]Definition{
         \\ "new_path":{"type":"string"}},"required":["old_path","new_path"]}
         ,
     },
+    .{
+        .name = "find",
+        .description = "Recursively find files under a directory whose names match a glob pattern.",
+        .parameters =
+        \\{"type":"object","properties":{"path":{"type":"string"},
+        \\ "name":{"type":"string","description":"Glob such as *.cc. Defaults to *."}},
+        \\ "required":["path"]}
+        ,
+    },
 };
 
 pub const Call = union(enum) {
@@ -71,6 +81,7 @@ pub const Call = union(enum) {
     ask: Ask,
     list: List,
     diff: Diff,
+    find: Find,
 };
 
 pub fn parse(
@@ -90,6 +101,8 @@ pub fn parse(
         return .{ .list = try parseArguments(List, arena, arguments_json) };
     if (std.mem.eql(u8, name, "diff"))
         return .{ .diff = try parseArguments(Diff, arena, arguments_json) };
+    if (std.mem.eql(u8, name, "find"))
+        return .{ .find = try parseArguments(Find, arena, arguments_json) };
 
     return error.UnknownTool;
 }
@@ -102,6 +115,7 @@ pub fn needsApproval(call: Call) bool {
         .ask => Ask.needs_approval,
         .list => List.needs_approval,
         .diff => Diff.needs_approval,
+        .find => Find.needs_approval,
     };
 }
 
@@ -113,6 +127,7 @@ pub fn summary(arena: std.mem.Allocator, call: Call) ![]const u8 {
         .ask => |ask| ask.summary(arena),
         .list => |list| list.summary(arena),
         .diff => |diff| diff.summary(arena),
+        .find => |find| find.summary(arena),
     };
 }
 
@@ -124,6 +139,7 @@ pub fn run(context: Context, call: Call, user: anytype) ![]const u8 {
         .ask => |ask| ask.run(context, user),
         .list => |list| list.run(context),
         .diff => |diff| diff.run(context),
+        .find => |find| find.run(context),
     };
 }
 

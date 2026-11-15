@@ -14,3 +14,4 @@ It is also interface-agnostic, so you can easily add a terminal UI (TUI) or grap
 | `ask` | Asks the user a question and returns the answer. |
 | `list` | Lists the entries of a directory, including hidden ones. |
 | `diff` | Compares two files and returns a unified diff. |
+| `find` | Recursively finds files whose names match a glob pattern. |
