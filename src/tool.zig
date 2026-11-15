@@ -5,6 +5,7 @@ const Create = @import("tools/Create.zig");
 const Write = @import("tools/Write.zig");
 const Ask = @import("tools/Ask.zig");
 const List = @import("tools/List.zig");
+const Diff = @import("tools/Diff.zig");
 
 pub const Definition = struct {
     name: []const u8,
@@ -53,6 +54,14 @@ pub const definitions = [_]Definition{
         \\ "required":["path"]}
         ,
     },
+    .{
+        .name = "diff",
+        .description = "Compare two files and return a unified diff.",
+        .parameters =
+        \\{"type":"object","properties":{"old_path":{"type":"string"},
+        \\ "new_path":{"type":"string"}},"required":["old_path","new_path"]}
+        ,
+    },
 };
 
 pub const Call = union(enum) {
@@ -61,6 +70,7 @@ pub const Call = union(enum) {
     write: Write,
     ask: Ask,
     list: List,
+    diff: Diff,
 };
 
 pub fn parse(
@@ -78,6 +88,8 @@ pub fn parse(
         return .{ .ask = try parseArguments(Ask, arena, arguments_json) };
     if (std.mem.eql(u8, name, "list"))
         return .{ .list = try parseArguments(List, arena, arguments_json) };
+    if (std.mem.eql(u8, name, "diff"))
+        return .{ .diff = try parseArguments(Diff, arena, arguments_json) };
 
     return error.UnknownTool;
 }
@@ -89,6 +101,7 @@ pub fn needsApproval(call: Call) bool {
         .write => Write.needs_approval,
         .ask => Ask.needs_approval,
         .list => List.needs_approval,
+        .diff => Diff.needs_approval,
     };
 }
 
@@ -99,6 +112,7 @@ pub fn summary(arena: std.mem.Allocator, call: Call) ![]const u8 {
         .write => |write| write.summary(arena),
         .ask => |ask| ask.summary(arena),
         .list => |list| list.summary(arena),
+        .diff => |diff| diff.summary(arena),
     };
 }
 
@@ -109,6 +123,7 @@ pub fn run(context: Context, call: Call, user: anytype) ![]const u8 {
         .write => |write| write.run(context),
         .ask => |ask| ask.run(context, user),
         .list => |list| list.run(context),
+        .diff => |diff| diff.run(context),
     };
 }
 

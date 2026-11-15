@@ -13,3 +13,4 @@ It is also interface-agnostic, so you can easily add a terminal UI (TUI) or grap
 | `write` | Replaces the entire contents of an existing file. Fails if the file does not exist. |
 | `ask` | Asks the user a question and returns the answer. |
 | `list` | Lists the entries of a directory, including hidden ones. |
+| `diff` | Compares two files and returns a unified diff. |
