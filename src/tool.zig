@@ -4,6 +4,7 @@ const Read = @import("tools/Read.zig");
 const Create = @import("tools/Create.zig");
 const Write = @import("tools/Write.zig");
 const Ask = @import("tools/Ask.zig");
+const List = @import("tools/List.zig");
 
 pub const Definition = struct {
     name: []const u8,
@@ -44,6 +45,14 @@ pub const definitions = [_]Definition{
         \\ "required":["question"]}
         ,
     },
+    .{
+        .name = "list",
+        .description = "List the entries of a directory, including hidden ones.",
+        .parameters =
+        \\{"type":"object","properties":{"path":{"type":"string"}},
+        \\ "required":["path"]}
+        ,
+    },
 };
 
 pub const Call = union(enum) {
@@ -51,6 +60,7 @@ pub const Call = union(enum) {
     create: Create,
     write: Write,
     ask: Ask,
+    list: List,
 };
 
 pub fn parse(
@@ -66,6 +76,8 @@ pub fn parse(
         return .{ .write = try parseArguments(Write, arena, arguments_json) };
     if (std.mem.eql(u8, name, "ask"))
         return .{ .ask = try parseArguments(Ask, arena, arguments_json) };
+    if (std.mem.eql(u8, name, "list"))
+        return .{ .list = try parseArguments(List, arena, arguments_json) };
 
     return error.UnknownTool;
 }
@@ -76,6 +88,7 @@ pub fn needsApproval(call: Call) bool {
         .create => Create.needs_approval,
         .write => Write.needs_approval,
         .ask => Ask.needs_approval,
+        .list => List.needs_approval,
     };
 }
 
@@ -85,6 +98,7 @@ pub fn summary(arena: std.mem.Allocator, call: Call) ![]const u8 {
         .create => |create| create.summary(arena),
         .write => |write| write.summary(arena),
         .ask => |ask| ask.summary(arena),
+        .list => |list| list.summary(arena),
     };
 }
 
@@ -94,6 +108,7 @@ pub fn run(context: Context, call: Call, user: anytype) ![]const u8 {
         .create => |create| create.run(context),
         .write => |write| write.run(context),
         .ask => |ask| ask.run(context, user),
+        .list => |list| list.run(context),
     };
 }
 
