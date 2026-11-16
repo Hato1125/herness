@@ -1,6 +1,16 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const Write = @This();
+
+pub const definition: llm.Tool = .{
+    .name = "write",
+    .description = "Overwrite an existing file with new content.",
+    .parameters =
+    \\{"type":"object","properties":{"path":{"type":"string"},
+    \\ "content":{"type":"string"}},"required":["path","content"]}
+    ,
+};
 
 pub const needs_approval = true;
 

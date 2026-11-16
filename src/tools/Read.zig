@@ -1,8 +1,18 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const Read = @This();
 
 const max_file_bytes = 1024 * 1024;
+
+pub const definition: llm.Tool = .{
+    .name = "read",
+    .description = "Read a text file and return its content.",
+    .parameters =
+    \\{"type":"object","properties":{"path":{"type":"string"}},
+    \\ "required":["path"]}
+    ,
+};
 
 pub const needs_approval = false;
 

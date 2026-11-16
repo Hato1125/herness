@@ -1,6 +1,16 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const List = @This();
+
+pub const definition: llm.Tool = .{
+    .name = "list",
+    .description = "List the entries of a directory, including hidden ones.",
+    .parameters =
+    \\{"type":"object","properties":{"path":{"type":"string"}},
+    \\ "required":["path"]}
+    ,
+};
 
 pub const needs_approval = false;
 

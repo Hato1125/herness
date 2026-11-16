@@ -10,63 +10,13 @@ const Diff = @import("tools/Diff.zig");
 const Find = @import("tools/Find.zig");
 
 pub const definitions = [_]llm.Tool{
-    .{
-        .name = "read",
-        .description = "Read a text file and return its content.",
-        .parameters =
-        \\{"type":"object","properties":{"path":{"type":"string"}},
-        \\ "required":["path"]}
-        ,
-    },
-    .{
-        .name = "create",
-        .description = "Create a new file. Fails if the file already exists.",
-        .parameters =
-        \\{"type":"object","properties":{"path":{"type":"string"},
-        \\ "content":{"type":"string"}},"required":["path","content"]}
-        ,
-    },
-    .{
-        .name = "write",
-        .description = "Overwrite an existing file with new content.",
-        .parameters =
-        \\{"type":"object","properties":{"path":{"type":"string"},
-        \\ "content":{"type":"string"}},"required":["path","content"]}
-        ,
-    },
-    .{
-        .name = "ask",
-        .description = "Ask the user a question and return the answer.",
-        .parameters =
-        \\{"type":"object","properties":{"question":{"type":"string"}},
-        \\ "required":["question"]}
-        ,
-    },
-    .{
-        .name = "list",
-        .description = "List the entries of a directory, including hidden ones.",
-        .parameters =
-        \\{"type":"object","properties":{"path":{"type":"string"}},
-        \\ "required":["path"]}
-        ,
-    },
-    .{
-        .name = "diff",
-        .description = "Compare two files and return a unified diff.",
-        .parameters =
-        \\{"type":"object","properties":{"old_path":{"type":"string"},
-        \\ "new_path":{"type":"string"}},"required":["old_path","new_path"]}
-        ,
-    },
-    .{
-        .name = "find",
-        .description = "Recursively find files under a directory whose names match a glob pattern.",
-        .parameters =
-        \\{"type":"object","properties":{"path":{"type":"string"},
-        \\ "name":{"type":"string","description":"Glob such as *.cc. Defaults to *."}},
-        \\ "required":["path"]}
-        ,
-    },
+    Read.definition,
+    Create.definition,
+    Write.definition,
+    Ask.definition,
+    List.definition,
+    Diff.definition,
+    Find.definition,
 };
 
 pub const Call = union(enum) {
@@ -88,7 +38,11 @@ pub fn parse(
 
     inline for (info.field_names, info.field_types) |tool_name, Arguments| {
         if (std.mem.eql(u8, name, tool_name)) {
-            const arguments = try parseArguments(Arguments, arena, arguments_json);
+            const arguments = try parseArguments(
+                Arguments,
+                arena,
+                arguments_json,
+            );
             return @unionInit(Call, tool_name, arguments);
         }
     }

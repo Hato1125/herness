@@ -1,6 +1,16 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const Create = @This();
+
+pub const definition: llm.Tool = .{
+    .name = "create",
+    .description = "Create a new file. Fails if the file already exists.",
+    .parameters =
+    \\{"type":"object","properties":{"path":{"type":"string"},
+    \\ "content":{"type":"string"}},"required":["path","content"]}
+    ,
+};
 
 pub const needs_approval = true;
 

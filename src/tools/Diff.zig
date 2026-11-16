@@ -1,6 +1,16 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const Diff = @This();
+
+pub const definition: llm.Tool = .{
+    .name = "diff",
+    .description = "Compare two files and return a unified diff.",
+    .parameters =
+    \\{"type":"object","properties":{"old_path":{"type":"string"},
+    \\ "new_path":{"type":"string"}},"required":["old_path","new_path"]}
+    ,
+};
 
 pub const needs_approval = false;
 

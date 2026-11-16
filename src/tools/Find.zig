@@ -1,6 +1,17 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const Find = @This();
+
+pub const definition: llm.Tool = .{
+    .name = "find",
+    .description = "Recursively find files under a directory whose names match a glob pattern.",
+    .parameters =
+    \\{"type":"object","properties":{"path":{"type":"string"},
+    \\ "name":{"type":"string","description":"Glob such as *.cc. Defaults to *."}},
+    \\ "required":["path"]}
+    ,
+};
 
 pub const needs_approval = false;
 
