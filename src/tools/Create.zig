@@ -13,7 +13,8 @@ pub fn summary(create: Create, arena: std.mem.Allocator) ![]const u8 {
     });
 }
 
-pub fn run(create: Create, context: Context) ![]const u8 {
+pub fn run(create: Create, context: Context, user: anytype) ![]const u8 {
+    _ = user;
     try std.Io.Dir.cwd().writeFile(context.io, .{
         .sub_path = create.path,
         .data = create.content,

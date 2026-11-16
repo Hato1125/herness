@@ -11,7 +11,8 @@ pub fn summary(list: List, arena: std.mem.Allocator) ![]const u8 {
     return list.path;
 }
 
-pub fn run(list: List, context: Context) ![]const u8 {
+pub fn run(list: List, context: Context, user: anytype) ![]const u8 {
+    _ = user;
     const result = try std.process.run(context.arena, context.io, .{
         .argv = &.{ "ls", "-A", "--", list.path },
     });

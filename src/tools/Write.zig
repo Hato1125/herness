@@ -13,7 +13,8 @@ pub fn summary(write: Write, arena: std.mem.Allocator) ![]const u8 {
     });
 }
 
-pub fn run(write: Write, context: Context) ![]const u8 {
+pub fn run(write: Write, context: Context, user: anytype) ![]const u8 {
+    _ = user;
     var file = try std.Io.Dir.cwd().openFile(
         context.io,
         write.path,

@@ -13,7 +13,8 @@ pub fn summary(read: Read, arena: std.mem.Allocator) ![]const u8 {
     return read.path;
 }
 
-pub fn run(read: Read, context: Context) ![]const u8 {
+pub fn run(read: Read, context: Context, user: anytype) ![]const u8 {
+    _ = user;
     return std.Io.Dir.cwd().readFileAlloc(
         context.io,
         read.path,

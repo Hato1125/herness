@@ -11,7 +11,8 @@ pub fn summary(diff: Diff, arena: std.mem.Allocator) ![]const u8 {
     return std.fmt.allocPrint(arena, "{s} {s}", .{ diff.old_path, diff.new_path });
 }
 
-pub fn run(diff: Diff, context: Context) ![]const u8 {
+pub fn run(diff: Diff, context: Context, user: anytype) ![]const u8 {
+    _ = user;
     const result = try std.process.run(context.arena, context.io, .{
         .argv = &.{ "diff", "-u", "--", diff.old_path, diff.new_path },
     });

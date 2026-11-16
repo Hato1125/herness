@@ -84,57 +84,33 @@ pub fn parse(
     name: []const u8,
     arguments_json: []const u8,
 ) !Call {
-    if (std.mem.eql(u8, name, "read"))
-        return .{ .read = try parseArguments(Read, arena, arguments_json) };
-    if (std.mem.eql(u8, name, "create"))
-        return .{ .create = try parseArguments(Create, arena, arguments_json) };
-    if (std.mem.eql(u8, name, "write"))
-        return .{ .write = try parseArguments(Write, arena, arguments_json) };
-    if (std.mem.eql(u8, name, "ask"))
-        return .{ .ask = try parseArguments(Ask, arena, arguments_json) };
-    if (std.mem.eql(u8, name, "list"))
-        return .{ .list = try parseArguments(List, arena, arguments_json) };
-    if (std.mem.eql(u8, name, "diff"))
-        return .{ .diff = try parseArguments(Diff, arena, arguments_json) };
-    if (std.mem.eql(u8, name, "find"))
-        return .{ .find = try parseArguments(Find, arena, arguments_json) };
+    const info = @typeInfo(Call).@"union";
+
+    inline for (info.field_names, info.field_types) |tool_name, Arguments| {
+        if (std.mem.eql(u8, name, tool_name)) {
+            const arguments = try parseArguments(Arguments, arena, arguments_json);
+            return @unionInit(Call, tool_name, arguments);
+        }
+    }
 
     return error.UnknownTool;
 }
 
 pub fn needsApproval(call: Call) bool {
     return switch (call) {
-        .read => Read.needs_approval,
-        .create => Create.needs_approval,
-        .write => Write.needs_approval,
-        .ask => Ask.needs_approval,
-        .list => List.needs_approval,
-        .diff => Diff.needs_approval,
-        .find => Find.needs_approval,
+        inline else => |tool| @TypeOf(tool).needs_approval,
     };
 }
 
 pub fn summary(arena: std.mem.Allocator, call: Call) ![]const u8 {
     return switch (call) {
-        .read => |read| read.summary(arena),
-        .create => |create| create.summary(arena),
-        .write => |write| write.summary(arena),
-        .ask => |ask| ask.summary(arena),
-        .list => |list| list.summary(arena),
-        .diff => |diff| diff.summary(arena),
-        .find => |find| find.summary(arena),
+        inline else => |tool| tool.summary(arena),
     };
 }
 
 pub fn run(context: Context, call: Call, user: anytype) ![]const u8 {
     return switch (call) {
-        .read => |read| read.run(context),
-        .create => |create| create.run(context),
-        .write => |write| write.run(context),
-        .ask => |ask| ask.run(context, user),
-        .list => |list| list.run(context),
-        .diff => |diff| diff.run(context),
-        .find => |find| find.run(context),
+        inline else => |tool| tool.run(context, user),
     };
 }
 
