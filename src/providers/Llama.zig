@@ -1,5 +1,6 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const openai = @import("../protocols/openai.zig");
 const Llama = @This();
 
@@ -48,6 +49,8 @@ pub fn connect(llama: *Llama, context: Context) !void {
             "--port",
             llama.port,
             "--jinja",
+            "--device",
+            "Vulkan0",
         },
         .stdin = .ignore,
         .stdout = .ignore,
@@ -66,10 +69,11 @@ pub fn connect(llama: *Llama, context: Context) !void {
 pub fn complete(
     llama: *Llama,
     context: Context,
-    messages: []const openai.Message,
+    messages: []const llm.Message,
+    tools: []const llm.Tool,
     listener: anytype,
-) !openai.Message {
-    return openai.complete(context, llama.url, null, messages, listener);
+) !llm.Message {
+    return openai.complete(context, llama.url, null, messages, tools, listener);
 }
 
 pub fn stop(llama: *Llama, context: Context) void {

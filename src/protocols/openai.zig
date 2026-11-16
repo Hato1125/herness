@@ -2,38 +2,16 @@ const std = @import("std");
 const Io = std.Io;
 const json = std.json;
 const Context = @import("../Context.zig");
-const tool = @import("../tool.zig");
-
-pub const Role = enum {
-    system,
-    user,
-    assistant,
-    tool,
-};
-
-pub const Message = struct {
-    role: Role,
-    content: []const u8 = "",
-    tool_calls: ?[]const ToolCall = null,
-    tool_call_id: ?[]const u8 = null,
-};
-
-pub const ToolCall = struct {
-    id: []const u8 = "",
-    type: []const u8 = "function",
-    function: Function,
-
-    pub const Function = struct {
-        name: []const u8,
-        arguments: []const u8 = "{}",
-    };
-};
+const llm = @import("../llm.zig");
+const Message = llm.Message;
+const ToolCall = llm.ToolCall;
 
 pub fn complete(
     context: Context,
     url: []const u8,
     model: ?[]const u8,
     messages: []const Message,
+    tools: []const llm.Tool,
     listener: anytype,
 ) !Message {
     const arena = context.arena;
@@ -41,12 +19,14 @@ pub fn complete(
     const request: Request = .{
         .model = model,
         .messages = messages,
-        .tools = try buildTools(arena),
+        .tools = try buildTools(arena, tools),
     };
 
-    const request_json = try json.Stringify.valueAlloc(arena, request, .{
-        .emit_null_optional_fields = false,
-    });
+    const request_json = try json.Stringify.valueAlloc(
+        arena,
+        request,
+        .{ .emit_null_optional_fields = false },
+    );
 
     const endpoint = try std.mem.concat(arena, u8, &.{ url, "/v1/chat/completions" });
 
@@ -75,10 +55,10 @@ const Request = struct {
     model: ?[]const u8,
     stream: bool = true,
     messages: []const Message,
-    tools: []const Tool,
+    tools: []const WireTool,
 };
 
-const Tool = struct {
+const WireTool = struct {
     type: []const u8 = "function",
     function: Function,
 
@@ -121,10 +101,13 @@ const PendingCall = struct {
     arguments: std.ArrayList(u8) = .empty,
 };
 
-fn buildTools(arena: std.mem.Allocator) ![]const Tool {
-    const tools = try arena.alloc(Tool, tool.definitions.len);
+fn buildTools(
+    arena: std.mem.Allocator,
+    definitions: []const llm.Tool,
+) ![]const WireTool {
+    const tools = try arena.alloc(WireTool, definitions.len);
 
-    for (tools, tool.definitions) |*entry, definition| {
+    for (tools, definitions) |*entry, definition| {
         const parameters = try json.parseFromSliceLeaky(
             json.Value,
             arena,

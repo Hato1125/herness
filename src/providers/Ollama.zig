@@ -1,5 +1,6 @@
 const std = @import("std");
 const Context = @import("../Context.zig");
+const llm = @import("../llm.zig");
 const openai = @import("../protocols/openai.zig");
 const Ollama = @This();
 
@@ -67,14 +68,16 @@ pub fn connect(ollama: *Ollama, context: Context) !void {
 pub fn complete(
     ollama: *Ollama,
     context: Context,
-    messages: []const openai.Message,
+    messages: []const llm.Message,
+    tools: []const llm.Tool,
     listener: anytype,
-) !openai.Message {
+) !llm.Message {
     return openai.complete(
         context,
         ollama.url,
         ollama.model,
         messages,
+        tools,
         listener,
     );
 }

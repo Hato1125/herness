@@ -1,10 +1,10 @@
 const std = @import("std");
-const openai = @import("protocols/openai.zig");
+const llm = @import("llm.zig");
 const Context = @import("Context.zig");
 const Llama = @import("providers/Llama.zig");
 const Ollama = @import("providers/Ollama.zig");
 
-pub const Message = openai.Message;
+pub const Message = llm.Message;
 
 /// What happens while a reply is arriving.
 pub const Event = union(enum) {
@@ -46,11 +46,12 @@ pub const Provider = union(Kind) {
         provider: *Provider,
         context: Context,
         messages: []const Message,
+        tools: []const llm.Tool,
         listener: anytype,
     ) !Message {
         return switch (provider.*) {
-            .llama => |*llama| llama.complete(context, messages, listener),
-            .ollama => |*ollama| ollama.complete(context, messages, listener),
+            .llama => |*llama| llama.complete(context, messages, tools, listener),
+            .ollama => |*ollama| ollama.complete(context, messages, tools, listener),
         };
     }
 

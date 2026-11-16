@@ -95,6 +95,7 @@ fn runTurn(
         const message = try provider.complete(
             context,
             messages.items,
+            &tool.definitions,
             terminal,
         );
         try messages.append(arena, message);

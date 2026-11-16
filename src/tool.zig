@@ -1,5 +1,6 @@
 const std = @import("std");
 const Context = @import("Context.zig");
+const llm = @import("llm.zig");
 const Read = @import("tools/Read.zig");
 const Create = @import("tools/Create.zig");
 const Write = @import("tools/Write.zig");
@@ -8,13 +9,7 @@ const List = @import("tools/List.zig");
 const Diff = @import("tools/Diff.zig");
 const Find = @import("tools/Find.zig");
 
-pub const Definition = struct {
-    name: []const u8,
-    description: []const u8,
-    parameters: []const u8,
-};
-
-pub const definitions = [_]Definition{
+pub const definitions = [_]llm.Tool{
     .{
         .name = "read",
         .description = "Read a text file and return its content.",
