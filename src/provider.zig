@@ -9,6 +9,11 @@ pub const Message = llm.Message;
 pub const Event = union(enum) {
     thinking,
     text: []const u8,
+    tool: []const u8,
+};
+
+pub const Approval = struct {
+    title: []const u8,
 };
 
 pub const Kind = enum {

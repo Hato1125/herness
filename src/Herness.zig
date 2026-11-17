@@ -1,6 +1,7 @@
 const std = @import("std");
 const Io = std.Io;
 const Context = @import("Context.zig");
+const Approval = @import("provider.zig").Approval;
 const Event = @import("provider.zig").Event;
 const Message = @import("provider.zig").Message;
 const Provider = @import("provider.zig").Provider;
@@ -164,6 +165,7 @@ const Terminal = struct {
         switch (event) {
             .thinking => terminal.print("\x1b[2mthinking...\x1b[0m\n\n", .{}),
             .text => |text| terminal.print("{s}", .{text}),
+            .tool => |title| terminal.print("[{s}]\n", .{title}),
         }
     }
 
@@ -190,6 +192,11 @@ const Terminal = struct {
         terminal.print("{s}", .{prompt});
         const line = terminal.in.takeDelimiter('\n') catch return null;
         return std.mem.trimEnd(u8, line orelse return null, "\r");
+    }
+
+    pub fn approve(terminal: Terminal, approval: Approval) bool {
+        terminal.print("[{s}] ", .{approval.title});
+        return terminal.confirm("allow? [y/N] ");
     }
 
     fn confirm(terminal: Terminal, question: []const u8) bool {
