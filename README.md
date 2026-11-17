@@ -4,6 +4,15 @@ HERNESS is a minimal agent harness with just the essentials. Its small footprint
 
 It is also interface-agnostic, so you can easily add a terminal UI (TUI) or graphical UI (GUI).
 
+## PROVIDERS
+
+| Name | Description |
+| --- | --- |
+| `llama` | Connects to llama-server, or starts it with the given GGUF file. |
+| `ollama` | Connects to Ollama, or starts `ollama serve`. |
+| `claude` | Runs Claude Code through `claude-agent-acp` over the Agent Client Protocol. |
+| `gemini` | Runs the Antigravity CLI through `agy acp` over the Agent Client Protocol. |
+
 ## BUILT-IN TOOLS
 
 | Name | Description |
