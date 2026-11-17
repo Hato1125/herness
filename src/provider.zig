@@ -6,11 +6,8 @@ const Ollama = @import("providers/Ollama.zig");
 
 pub const Message = llm.Message;
 
-/// What happens while a reply is arriving.
 pub const Event = union(enum) {
-    /// The model started reasoning before it answers.
     thinking,
-    /// A piece of the answer text.
     text: []const u8,
 };
 
@@ -19,26 +16,36 @@ pub const Kind = enum {
     ollama,
 };
 
+pub const Config = union(Kind) {
+    llama: Llama.Config,
+    ollama: Ollama.Config,
+};
+
 pub const Provider = union(Kind) {
     llama: Llama,
     ollama: Ollama,
 
     pub fn init(
-        kind: Kind,
+        config: Config,
         arena: std.mem.Allocator,
         env: *const std.process.Environ.Map,
-        model: ?[]const u8,
     ) !Provider {
-        return switch (kind) {
-            .llama => .{ .llama = try Llama.init(arena, env, model) },
-            .ollama => .{ .ollama = try Ollama.init(arena, env, model) },
+        return switch (config) {
+            inline else => |provider_config, kind| @unionInit(
+                Provider,
+                @tagName(kind),
+                try @FieldType(Provider, @tagName(kind)).init(
+                    arena,
+                    env,
+                    provider_config,
+                ),
+            ),
         };
     }
 
     pub fn connect(provider: *Provider, context: Context) !void {
         return switch (provider.*) {
-            .llama => |*llama| llama.connect(context),
-            .ollama => |*ollama| ollama.connect(context),
+            inline else => |*self| self.connect(context),
         };
     }
 
@@ -50,15 +57,42 @@ pub const Provider = union(Kind) {
         listener: anytype,
     ) !Message {
         return switch (provider.*) {
-            .llama => |*llama| llama.complete(context, messages, tools, listener),
-            .ollama => |*ollama| ollama.complete(context, messages, tools, listener),
+            inline else => |*self| self.complete(
+                context,
+                messages,
+                tools,
+                listener,
+            ),
         };
+    }
+
+    pub fn command(
+        provider: *Provider,
+        context: Context,
+        name: []const u8,
+        args: []const u8,
+    ) !void {
+        switch (provider.*) {
+            inline else => |*self| {
+                const commands = @TypeOf(self.*).commands;
+
+                inline for (@typeInfo(commands).@"struct".decl_names) |command_name| {
+                    if (std.mem.eql(u8, name, command_name)) {
+                        return @field(
+                            commands,
+                            command_name,
+                        ).run(self, context, args);
+                    }
+                }
+
+                return error.UnknownCommand;
+            },
+        }
     }
 
     pub fn stop(provider: *Provider, context: Context) void {
         switch (provider.*) {
-            .llama => |*llama| llama.stop(context),
-            .ollama => |*ollama| ollama.stop(context),
+            inline else => |*self| self.stop(context),
         }
     }
 };

@@ -6,10 +6,22 @@ const llm = @import("../llm.zig");
 const Message = llm.Message;
 const ToolCall = llm.ToolCall;
 
+/// Request fields that differ between servers. Null fields are not sent.
+pub const Options = struct {
+    model: ?[]const u8 = null,
+    reasoning_effort: ?[]const u8 = null,
+
+    chat_template_kwargs: ?ChatTemplateKwargs = null,
+
+    pub const ChatTemplateKwargs = struct {
+        reasoning_effort: ?[]const u8 = null,
+    };
+};
+
 pub fn complete(
     context: Context,
     url: []const u8,
-    model: ?[]const u8,
+    options: Options,
     messages: []const Message,
     tools: []const llm.Tool,
     listener: anytype,
@@ -17,7 +29,9 @@ pub fn complete(
     const arena = context.arena;
 
     const request: Request = .{
-        .model = model,
+        .model = options.model,
+        .reasoning_effort = options.reasoning_effort,
+        .chat_template_kwargs = options.chat_template_kwargs,
         .messages = messages,
         .tools = try buildTools(arena, tools),
     };
@@ -53,6 +67,8 @@ pub fn complete(
 
 const Request = struct {
     model: ?[]const u8,
+    reasoning_effort: ?[]const u8,
+    chat_template_kwargs: ?Options.ChatTemplateKwargs,
     stream: bool = true,
     messages: []const Message,
     tools: []const WireTool,

@@ -4,7 +4,7 @@ const Context = @import("Context.zig");
 const Event = @import("provider.zig").Event;
 const Message = @import("provider.zig").Message;
 const Provider = @import("provider.zig").Provider;
-const ProviderKind = @import("provider.zig").Kind;
+const ProviderConfig = @import("provider.zig").Config;
 const tool = @import("tool.zig");
 const Herness = @This();
 
@@ -15,8 +15,7 @@ const system_prompt =
 ;
 
 process: std.process.Init,
-provider: ProviderKind,
-model: ?[]const u8 = null,
+provider: ProviderConfig,
 
 pub fn start(herness: Herness) !void {
     const process = herness.process;
@@ -49,7 +48,6 @@ pub fn start(herness: Herness) !void {
         herness.provider,
         arena,
         process.environ_map,
-        herness.model,
     );
     defer provider.stop(context);
 
@@ -68,6 +66,12 @@ fn chat(context: Context, terminal: Terminal, provider: *Provider) !void {
         if (line.len == 0) continue;
         if (std.mem.eql(u8, line, "/exit")) break;
 
+        if (std.mem.startsWith(u8, line, "/")) {
+            runCommand(context, provider, line[1..]) catch |err|
+                terminal.report(err);
+            continue;
+        }
+
         const owned_line = try arena.dupe(u8, line);
         try messages.append(arena, .{ .role = .user, .content = owned_line });
 
@@ -78,6 +82,15 @@ fn chat(context: Context, terminal: Terminal, provider: *Provider) !void {
             &messages,
         ) catch |err| terminal.report(err);
     }
+}
+
+/// Passes "/name args" to the provider, which defines its own commands.
+fn runCommand(context: Context, provider: *Provider, line: []const u8) !void {
+    const separator = std.mem.indexOfScalar(u8, line, ' ') orelse line.len;
+    const name = line[0..separator];
+    const args = std.mem.trim(u8, line[separator..], " ");
+
+    try provider.command(context, name, args);
 }
 
 /// Runs model turns until the model answers without calling tools.
