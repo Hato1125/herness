@@ -4,6 +4,9 @@ const llm = @import("../llm.zig");
 const openai = @import("../protocols/openai.zig");
 const Ollama = @This();
 
+pub const name = "Ollama";
+pub const icon = "\u{f167a}";
+
 const default_host = "127.0.0.1";
 const default_port = "11434";
 const ready_timeout_ms = 30_000;

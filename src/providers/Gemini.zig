@@ -4,6 +4,9 @@ const llm = @import("../llm.zig");
 const acp = @import("../protocols/acp.zig");
 const Gemini = @This();
 
+pub const name = "Gemini";
+pub const icon = "\u{f0ae2}";
+
 pub const Config = struct {
     argv: []const []const u8 = &.{ "agy", "acp" },
     model: ?[]const u8 = null,

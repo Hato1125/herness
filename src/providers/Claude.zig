@@ -4,6 +4,9 @@ const llm = @import("../llm.zig");
 const acp = @import("../protocols/acp.zig");
 const Claude = @This();
 
+pub const name = "Claude";
+pub const icon = "\u{ec82}";
+
 pub const Config = struct {
     argv: []const []const u8 = &.{"claude-agent-acp"},
     model: ?[]const u8 = null,

@@ -82,18 +82,18 @@ pub const Provider = union(Kind) {
     pub fn command(
         provider: *Provider,
         context: Context,
-        name: []const u8,
+        command_name: []const u8,
         args: []const u8,
     ) !void {
         switch (provider.*) {
             inline else => |*self| {
                 const commands = @TypeOf(self.*).commands;
 
-                inline for (@typeInfo(commands).@"struct".decl_names) |command_name| {
-                    if (std.mem.eql(u8, name, command_name)) {
+                inline for (@typeInfo(commands).@"struct".decl_names) |declared| {
+                    if (std.mem.eql(u8, command_name, declared)) {
                         return @field(
                             commands,
-                            command_name,
+                            declared,
                         ).run(self, context, args);
                     }
                 }
@@ -101,6 +101,18 @@ pub const Provider = union(Kind) {
                 return error.UnknownCommand;
             },
         }
+    }
+
+    pub fn name(provider: *const Provider) []const u8 {
+        return switch (provider.*) {
+            inline else => |self| @TypeOf(self).name,
+        };
+    }
+
+    pub fn icon(provider: *const Provider) []const u8 {
+        return switch (provider.*) {
+            inline else => |self| @TypeOf(self).icon,
+        };
     }
 
     pub fn stop(provider: *Provider, context: Context) void {
