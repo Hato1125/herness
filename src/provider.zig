@@ -4,6 +4,7 @@ const Context = @import("Context.zig");
 const Llama = @import("providers/Llama.zig");
 const Ollama = @import("providers/Ollama.zig");
 const Claude = @import("providers/Claude.zig");
+const Gemini = @import("providers/Gemini.zig");
 
 pub const Message = llm.Message;
 
@@ -21,18 +22,21 @@ pub const Kind = enum {
     llama,
     ollama,
     claude,
+    gemini,
 };
 
 pub const Config = union(Kind) {
     llama: Llama.Config,
     ollama: Ollama.Config,
     claude: Claude.Config,
+    gemini: Gemini.Config,
 };
 
 pub const Provider = union(Kind) {
     llama: Llama,
     ollama: Ollama,
     claude: Claude,
+    gemini: Gemini,
 
     pub fn init(
         config: Config,
