@@ -3,6 +3,7 @@ const llm = @import("llm.zig");
 const Context = @import("Context.zig");
 const Llama = @import("providers/Llama.zig");
 const Ollama = @import("providers/Ollama.zig");
+const Claude = @import("providers/Claude.zig");
 
 pub const Message = llm.Message;
 
@@ -19,16 +20,19 @@ pub const Approval = struct {
 pub const Kind = enum {
     llama,
     ollama,
+    claude,
 };
 
 pub const Config = union(Kind) {
     llama: Llama.Config,
     ollama: Ollama.Config,
+    claude: Claude.Config,
 };
 
 pub const Provider = union(Kind) {
     llama: Llama,
     ollama: Ollama,
+    claude: Claude,
 
     pub fn init(
         config: Config,
